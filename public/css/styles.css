@@ -1,0 +1,9 @@
+.card-img-top {
+	height: 11rem;
+}
+
+.cardShadow {
+	box-shadow: 0px 3px 8px -3px rgba(0, 0, 0, 0.75);
+	-webkit-box-shadow: 0px 3px 8px -3px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: 0px 3px 8px -3px rgba(0, 0, 0, 0.75);
+}

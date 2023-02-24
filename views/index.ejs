@@ -23,10 +23,11 @@
 				<% results.forEach((results) => { %>
 				<div class="col">
 					<div class="card m-2 cardShadow">
-						<img src="<%= results.main_picture%>" class="card-img-top" alt="..." />
+						<img src="<%= results.picture_1%>" class="card-img-top" alt="..." />
 						<div class="card-body">
 							<h5 class="card-title"><%= results.nombre%></h5>
 							<h6 class="card-text"><%= results.ubicacion%></h6>
+							<p class="card-text"><%= results.tipo%></p>
 							<p class="card-text">USD <%= results.precio%></p>
 							<a href="#" class="btn btn-primary">Ver detalles</a>
 						</div>

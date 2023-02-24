@@ -7,105 +7,110 @@ let imagekit = new ImageKit({
 	urlEndpoint: 'https://ik.imagekit.io/ytnv3sjurl',
 })
 //NEW CONDO
-exports.create_property = (req, res) => {
-	const tipo = req.body.tipo
-	const nombre = req.body.nombre
-	const ubicacion = req.body.ubicacion
-	const precio = req.body.precio
-	const descripcion = req.body.descripcion
-
-	console.log(tipo, nombre, ubicacion, precio, descripcion)
-
-	database.query('INSERT INTO propiedades SET ?', { tipo, nombre, ubicacion, precio, descripcion }, (error, results) => {
-		if (error) {
-			console.log(error)
-		}
-		// req.flash('message', 'Tarifa agregada con éxito')
-		console.log('Propiedad ID: ' + results.id)
-	})
-
-	const images = req.files
-	const url = []
-	const location = ubicacion.replace(/\s/g, '')
-	const name = nombre.replace(/\s/g, '')
-
-	images.forEach((image, i) => {
-		let base64img = image.buffer.toString('base64')
-		// console.log(`image - ${i}: ` + base64img)
-		console.log(image)
-
-		// imagekit.upload(
-		// 	{
-		// 		file: base64img,
-		// 		fileName: image.originalname,
-		// 		folder: '/properties/' + tipo + '/' + location + '/' + name,
-		// 	},
-		// 	function (error, result) {
-		// 		if (error) {
-		// 			console.error(`Error uploading file ${i}: ${error.message}`)
-		// 		} else {
-		// 			url[i] = result.url
-		// 			console.log(url)
-		// 		}
-		// 		if (url.length === 5) {
-		// 			const sql = `INSERT INTO propiedades (picture_1, picture_2, picture_3, picture_4, picture_5) VALUES (?, ?, ?, ?, ?)`
-		// 			const values = url
-		// 			database.query(sql, values, (err, result) => {
-		// 				if (err) {
-		// 					console.error(`Error inserting URLs into database: ${err.message}`)
-		// 				}
-		// 				console.log(result)
-		// 				res.redirect('/')
-		// 			})
-		// 		}
-		// 	}
-		// )
-	})
-}
-
-// exports.create_property = async (req, res) => {
-// 	const images = req.file.buffer.toString('base64')
+// exports.create_property = async  (req, res) => {
 // 	const tipo = req.body.tipo
 // 	const nombre = req.body.nombre
 // 	const ubicacion = req.body.ubicacion
 // 	const precio = req.body.precio
 // 	const descripcion = req.body.descripcion
-// 	console.log(tipo, nombre, ubicacion, precio, descripcion)
-// 	try {
-// 		if (err) {
-// 			console.error(`Error uploading files: ${err}`)
-// 			return res.status(500).send('Error uploading files')
-// 		}
 
-// 		await imagekit.upload(
+// 	console.log(tipo, nombre, ubicacion, precio, descripcion)
+
+// 	const images = req.files
+// 	const url = []
+// 	const location = ubicacion.replace(/\s/g, '')
+// 	const name = nombre.replace(/\s/g, '')
+
+// 	images.forEach((image, i) => {
+// 		let base64img = image.buffer.toString('base64')
+// 		// console.log(`image - ${i}: ` + base64img)
+
+// 		imagekit.upload(
 // 			{
-// 				file: image, //required
-// 				fileName: req.file.originalname, //required
-// 				folder: /properties/ + tipo + '/' + ubicacion,
+// 				file: base64img,
+// 				fileName: image.originalname,
+// 				folder: '/properties/' + tipo + '/' + location + '/' + name,
 // 			},
 // 			function (error, result) {
-// 				if (error) console.log(error)
-// 				else console.log(result.url)
-
-// 				let main_picture = result.url
-
-// 		database.query('INSERT INTO propiedades SET ?', { tipo, nombre, ubicacion, precio, descripcion, main_picture }, (error, results) => {
-// 			if (error) {
-// 				console.log(error)
+// 				if (error) {
+// 					console.error(`Error uploading file ${i}: ${error.message}`)
+// 				} else {
+// 					url[i] = result.url
+// 					console.log(url)
+// 				}
+// 				if (url.length === 5) {
+// 					const data = {
+// 						tipo: req.body.tipo,
+// 						nombre: req.body.nombre,
+// 						ubicacion: req.body.ubicacion,
+// 						precio: req.body.precio,
+// 						descripcion: req.body.descripcion,
+// 						picture_1: url[0],
+// 						picture_2: url[1],
+// 						picture_3: url[2],
+// 						picture_4: url[3],
+// 						picture_5: url[4],
+// 					}
+// 					database.query('INSERT INTO propiedades SET ?', data, (error, results) => {
+// 						if (error) {
+// 							console.log(error)
+// 						}
+// 						console.log(results)
+// 					})
+// 				}
 // 			}
-// 			// req.flash('message', 'Tarifa agregada con éxito')
-// 			res.redirect('/')
-// 			console.log(results)
-// 		})
-// 	}
-// )
-
-// 		// console.log(main_picture)
-// 	} catch (error) {
-// 		console.log(error)
-// 	}
+// 		)
+// 	})
 // }
 
+exports.create_property = async (req, res) => {
+	const tipo = req.body.tipo
+	const nombre = req.body.nombre
+	const ubicacion = req.body.ubicacion
+
+	try {
+		// 	console.log(tipo, nombre, ubicacion, precio, descripcion)
+
+		// const image = req.files
+		const location = ubicacion.replace(/\s/g, '')
+		const name = nombre.replace(/\s/g, '')
+
+		// let base64img = image.buffer.toString('base64')
+		// upload images to ImageKit and get URLs
+		const imageUrls = await Promise.all(
+			req.files.map(async (file) => {
+				const response = await imagekit.upload({
+					file: file.buffer,
+					fileName: file.originalname,
+					folder: '/properties/' + tipo + '/' + location + '/' + name,
+				})
+				return response.url
+			})
+		)
+
+		// insert data into MySQL database
+		const data = {
+			tipo: req.body.tipo,
+			nombre: req.body.nombre,
+			ubicacion: req.body.ubicacion,
+			precio: req.body.precio,
+			descripcion: req.body.descripcion,
+			picture_1: imageUrls[0],
+			picture_2: imageUrls[1],
+			picture_3: imageUrls[2],
+			picture_4: imageUrls[3],
+			picture_5: imageUrls[4],
+		}
+		await query('INSERT INTO propiedades SET ?', data)
+
+		// send response to client
+		res.send('Images uploaded successfully')
+	} catch (error) {
+		console.error(error)
+		res.status(500).send('Server error')
+	}
+}
+////////////////////////////////////////////////////////
 exports.get_properties = (req, res) => {
 	try {
 		database.query('SELECT * FROM propiedades', (error, results) => {
